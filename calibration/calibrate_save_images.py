@@ -15,12 +15,7 @@ while (True):
     # Capture frame-by-frame
     ret, image = cap.read()
 
-    # display image
-    cv2.imshow('grid', cv2.flip(image,1))
-    cv2.waitKey(1)
-
-    # save image to file, if pattern found
-    found, corners = cv2.findChessboardCorners(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), pattern_size, None)
+    found, corners = cv2.findChessboardCorners(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), pattern_size, cv2.CALIB_CB_FAST_CHECK)
 
     if found == True:
         # Save image to disc
