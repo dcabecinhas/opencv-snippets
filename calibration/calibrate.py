@@ -19,6 +19,9 @@ from __future__ import print_function
 import numpy as np
 import cv2
 
+import yaml
+import json
+
 # local modules
 from common import splitfn
 
@@ -91,6 +94,24 @@ if __name__ == '__main__':
     print("\nRMS:", rms)
     print("camera matrix:\n", camera_matrix)
     print("distortion coefficients: ", dist_coefs.ravel())
+
+    # From https://longervision.github.io/2017/03/19/opencv-internal-calibration-chessboard/
+    #
+    # Write to yaml configuration file
+    # 
+    # It's very important to transform the matrix to list.
+    data = {'camera_matrix': np.asarray(camera_matrix).tolist(), 'dist_coeff': np.asarray(dist_coefs).tolist()}
+    with open("calibration.json", "w") as f:
+        json.dump(data, f)
+    with open("calibration.yaml", "w") as f:
+        yaml.dump(data, f)
+
+    # To read back the yaml file:
+    # 
+    # with open('calibration.yaml') as f:
+    #     loadeddict = yaml.load(f)
+    #     camera_matrix_loaded = loadeddict.get('camera_matrix')
+    #     dist_coefs_loaded = loadeddict.get('dist_coeff')
 
     # undistort the image with the calibration
     print('')
