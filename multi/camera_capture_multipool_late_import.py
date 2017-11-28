@@ -1,14 +1,27 @@
 #!/usr/bin/env python
 ## Parallelism using Pool() with late import of cv2 module (different loader addresses)
 from multiprocessing import Pool
+import multiprocessing
+import threading
 import queue
-
 import timeit
+
+
+def get_image(q, pool, cap):
+
+    while(True):
+        # Capture frame-by-frame
+        ret, frame = cap.read()
+
+        if(not q.full()):
+            q.put(pool.apply_async(process_image, (frame,)))
 
 
 def process_image(image):
 
     import cv2
+
+    a = hex(id(cv2.__loader__))
 
     font = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -39,63 +52,49 @@ def process_image(image):
 
 
 def main():
-
-    framerate = 1/30
     
     N = 10
     t_prev = timeit.default_timer()
     counter = 0
     fps = 0
 
-    qresults = queue.Queue()
+    q = queue.Queue(maxsize=2)    
+    pool = Pool(processes=2)
 
-    with Pool(processes=2) as pool:
+    import cv2
+    cap = cv2.VideoCapture(0)
+    # cap.set(cv2.CAP_PROP_FRAME_WIDTH,1900);
+    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT,1080);
+    # cap.set(cv2.CAP_PROP_FRAME_WIDTH,1280);
+    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT,720);
+    # cap.set(cv2.CAP_PROP_FRAME_WIDTH,848);
+    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT,480);
+    # cap.set(cv2.CAP_PROP_FRAME_WIDTH,640);
+    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT,360);
+    # cap.set(cv2.CAP_PROP_FRAME_WIDTH,424);
+    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT,240);
 
-        import cv2
-        cap = cv2.VideoCapture(0)
-        # cap.set(cv2.CAP_PROP_FRAME_WIDTH,1900);
-        # cap.set(cv2.CAP_PROP_FRAME_HEIGHT,1080);
-        # cap.set(cv2.CAP_PROP_FRAME_WIDTH,1280);
-        # cap.set(cv2.CAP_PROP_FRAME_HEIGHT,720);
-        # cap.set(cv2.CAP_PROP_FRAME_WIDTH,848);
-        # cap.set(cv2.CAP_PROP_FRAME_HEIGHT,480);
-        # cap.set(cv2.CAP_PROP_FRAME_WIDTH,640);
-        # cap.set(cv2.CAP_PROP_FRAME_HEIGHT,360);
-        # cap.set(cv2.CAP_PROP_FRAME_WIDTH,424);
-        # cap.set(cv2.CAP_PROP_FRAME_HEIGHT,240);
+    p = threading.Thread(target=get_image, args=(q,pool,cap,))
+    p.start()
+    
+    cv2.namedWindow('Processed image',cv2.WINDOW_AUTOSIZE | cv2.WINDOW_KEEPRATIO | cv2.WINDOW_OPENGL)
 
-        cv2.namedWindow('Processed image',cv2.WINDOW_AUTOSIZE | cv2.WINDOW_KEEPRATIO | cv2.WINDOW_OPENGL)
+    # Get images until buffer is empty
+    while True:
+        r = q.get()
+        image = r.get() 
+        
+        counter += 1
+        if(counter % N == 0):
+            t = timeit.default_timer()
+            fps = N/(t-t_prev)
+            t_prev = t
+            print('fps:',fps)
 
-        while(True):
-            # Capture frame-by-frame
-            ret, frame = cap.read()
-
-            counter += 1
-
-            qresults.put(pool.apply_async(process_image, (frame,)))
-
-            while True:
-                try:
-                    r = qresults.get(block=False)
-                except queue.Empty:
-                    break
-
-                try:
-                    image = r.get(timeout=1/framerate)
-                    break
-                except queue.Empty:
-                    break
-                
-            if(counter % N == 0):
-                t = timeit.default_timer()
-                fps = N/(t-t_prev)
-                t_prev = t
-                print('fps:',fps)
-
-            # Display the resulting frame
-            cv2.imshow('Processed image',image)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+        # Display the latest image
+        cv2.imshow('Processed image',image)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
     # When everything done, release the capture
     cap.release()
@@ -104,7 +103,6 @@ def main():
 
     # Hack not to "hang" the window in *nix systems (Linux,Mac)
     cv2.waitKey(10)
-
 
 if __name__ == "__main__":
     main()
