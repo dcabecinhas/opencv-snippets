@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # From https://docs.opencv.org/3.3.0/d7/d8b/tutorial_py_face_detection.html
 import cv2
 import timeit

@@ -1,7 +1,7 @@
+#!/usr/bin/env python
 # From: https://github.com/MyDuan/openGL-openCV-python-sample/blob/master/ARTest.py#L1
 # Update for 2D with http://www.alecjacobson.com/weblog/?p=1875
 # Improve with https://stackoverflow.com/questions/32210107/opencv-python-opengl-texture
-
 import numpy as np
 import cv2
 from PIL import Image

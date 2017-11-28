@@ -1,5 +1,5 @@
+#!/usr/bin/env python
 # From https://stackoverflow.com/questions/32210107/opencv-python-opengl-texture
-
 import cv2
 from OpenGL.GL import *
 from OpenGL.GLU import *

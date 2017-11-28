@@ -1,5 +1,5 @@
+#!/usr/bin/env python
 # From http://zulko.github.io/blog/2013/10/04/read-and-write-audio-files-in-python-using-ffmpeg/
-
 import cv2
 import timeit
 
