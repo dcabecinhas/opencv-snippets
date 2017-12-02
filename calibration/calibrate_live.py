@@ -104,10 +104,17 @@ with open("calibration.json", "w") as f:
 with open("calibration.yaml", "w") as f:
     yaml.dump(data, f)
 
-# To read back the yaml file:
+# To read back the JSON file:
 # 
 # with open('calibration.yaml') as f:
-#     loadeddict = yaml.load(f)
-#     camera_matrix_loaded = loadeddict.get('camera_matrix')
-#     dist_coefs_loaded = loadeddict.get('dist_coeff')
+#     d = json.load(f)
+#     camera_matrix = d['camera_matrix']
+#     dist_coefs = d['dist_coeff']
+#
+# To read back the YAML file:
+#
+# with open('calibration.yaml') as f:
+#     d = yaml.load(f)
+#     camera_matrix = d['camera_matrix']
+#     dist_coefs = d['dist_coeff']
 
