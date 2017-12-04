@@ -2,10 +2,16 @@
 
 import cv2
 import numpy as np
-import yaml
+# import yaml
 
 import json
 from datetime import datetime
+import sys
+
+try:
+    import yaml
+except:
+    pass
 
 font = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -13,8 +19,15 @@ cap = cv2.VideoCapture(0)
 # cap.set(cv2.CAP_PROP_FRAME_WIDTH,640);
 # cap.set(cv2.CAP_PROP_FRAME_HEIGHT,480);
 
-# Needed for fast display
-cv2.namedWindow('grid',cv2.WINDOW_AUTOSIZE | cv2.WINDOW_KEEPRATIO | cv2.WINDOW_OPENGL)
+OPENGL_SUPPORT = False
+for line in cv2.getBuildInformation().split('\n'):
+    if 'OpenGL Support' in line:
+        if 'YES' in line:
+            OPENGL_SUPPORT = True
+
+if(OPENGL_SUPPORT):
+    # Needed for fast display
+    cv2.namedWindow('grid',cv2.WINDOW_AUTOSIZE | cv2.WINDOW_KEEPRATIO | cv2.WINDOW_OPENGL)
 
 # Number of inner corners per a chessboard row and column
 pattern_size = (7,5)
@@ -79,8 +92,11 @@ cv2.destroyAllWindows()
 cv2.waitKey(1)
 
 
+if(len(obj_points)<10):
+    print('\nNot enough images. Minimum for a good calibration is 10.')
+    sys.exit()
 
-print("Calculating camera distortion...")
+print("\nCalculating camera distortion...")
 
 h, w = image.shape[:2]
 
@@ -101,8 +117,9 @@ data = {'camera_matrix': np.asarray(camera_matrix).tolist(),
 
 with open("calibration.json", "w") as f:
     json.dump(data, f)
-with open("calibration.yaml", "w") as f:
-    yaml.dump(data, f)
+if('yaml' in sys.modules):
+    with open("calibration.yaml", "w") as f:
+        yaml.dump(data, f)
 
 # To read back the JSON file:
 # 
